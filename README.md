@@ -19,11 +19,14 @@ Six metrics translate financial figures and workplace observations into specific
 
 Each metric opens a figure editor with reporting dates, currency where relevant, a source link, calculation details and assumptions. Changes recalculate the reading and the prioritised follow-up questions. Missing figures remain unknown.
 
-The report includes an evidence trail, company identity/scope notes, different checklists for job candidates and existing employees, and a saved watchlist with review dates. The overview uses a compact six-metric strip, an interactive 3D signal view and a selected-metric chart. Full calculation and source details open on demand.
+The report includes an evidence trail, company identity/scope notes, different checklists for job candidates and existing employees, and a saved watchlist with review dates. The overview uses a charcoal and lime visual system, a spatial signal map, a selected-metric chart and a six-metric dock. Self-hosted Manrope and IBM Plex Mono provide consistent display and data typography. Full calculation and source details open on demand.
 
 ## Visual evaluation
 
-- Three.js renders six selectable 3D pillars with orbit, zoom, optional rotation and reset controls. Label buttons and the metric strip support keyboard selection.
+The company is the centre of a radial 3D diagram. Selecting a labelled column or a metric in the dock highlights both and updates the adjacent detail panel. The detail panel also supports previous/next navigation. Full-screen mode keeps the metric labels and the screening-band explanation visible; unsupported embedded browsers retain the regular view.
+
+
+- Three.js renders six selectable hexagonal 3D pillars around a central company disc, with orbit, zoom, optional rotation, reset and full-screen exploration controls. Label buttons and the metric strip support keyboard selection.
 - Pillar heights are **ordinal screening bands**, not amounts or a composite health score. Positive, review and concern have fixed heights; unknown or stale readings use hollow outlines rather than a zero-height value.
 - Exact values remain labelled. Selecting a signal opens a Recharts visualization in its own units: net operating cash flow, cash versus borrowings, an explicitly indexed revenue comparison, operating margin, a constant-burn cash scenario, or aggregate salary payment counts.
 - Missing/stale figures do not produce quantitative charts. One-period data never produces an invented historical trend.

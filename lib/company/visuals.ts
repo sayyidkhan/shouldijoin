@@ -1,6 +1,6 @@
 import type {MetricId,MetricInput,Result,Tone} from './model';
 
-export const SIGNAL_COLORS:Record<Tone,string>={positive:'#57d9bd',watch:'#ffbb64',concern:'#fa7a8b',unknown:'#7c8ba6'};
+export const SIGNAL_COLORS:Record<Tone,string>={positive:'#b8f36d',watch:'#f5b963',concern:'#ff827d',unknown:'#798984'};
 // Heights are ordinal screening bands, not an overall score or financial scale.
 // Null deliberately distinguishes missing / stale information from a low reading.
 export const SIGNAL_HEIGHTS:Record<Tone,number|null>={positive:3.1,watch:1.65,concern:.6,unknown:null};
