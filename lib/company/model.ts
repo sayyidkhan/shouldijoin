@@ -1,7 +1,7 @@
 export type MetricId = 'cashflow' | 'runway' | 'debt' | 'growth' | 'margin' | 'payroll';
 export type Tone = 'positive' | 'watch' | 'concern' | 'unknown';
 export type Evidence = { id: string; category: string; signal: string; note: string; url: string; date: string };
-export type MetricInput = { values: number[]; date: string; period: string; url: string; note: string; currency: 'USD' | 'SGD'; origin: 'disclosure' | 'user' };
+export type MetricInput = { values: number[]; date: string; period: string; url: string; note: string; currency: 'USD' | 'SGD'; origin: 'disclosure' | 'user'; cashBasis?: 'cash_equivalents' | 'company_liquidity' | 'unconfirmed' };
 export type Company = { id: string; name: string; entity: string; evidence: Evidence[]; reviewed: string; next: string; checks: string[]; metrics: Partial<Record<MetricId, MetricInput>> };
 export type MetricSpec = { id: MetricId; group: string; title: string; question: string; description: string; formula: string; fields: {label: string; min?: number; max?: number; integer?: boolean}[]; monetary: boolean; bands: string[]; caveat: string; action: string };
 export type Result = { value: string; unit: string; tone: Tone; label: string; explanation: string; numeric: number | null; stale: boolean; complete: boolean };

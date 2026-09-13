@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {Box,Grid2X2,ArrowUpRight,ArrowRight,ChevronLeft,ChevronRight,Plus,ChevronDown,Info,CheckCircle2,TriangleAlert,CircleHelp,Wallet,Landmark,TrendingUp,Users,Timer,Percent} from 'lucide-react';
+import {Box,Radar as RadarIcon,GitCompareArrows,Grid2X2,ArrowUpRight,ArrowRight,ChevronLeft,ChevronRight,Plus,ChevronDown,Info,CheckCircle2,TriangleAlert,CircleHelp,Wallet,Landmark,TrendingUp,Users,Timer,Percent} from 'lucide-react';
 import {BarChart,Bar,XAxis,YAxis,CartesianGrid,ReferenceLine,AreaChart,Area,PieChart,Pie,Cell,LabelList} from 'recharts';
 import {ChartContainer,ChartTooltip,ChartTooltipContent} from '@/components/ui/chart';
 import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
@@ -8,6 +8,8 @@ import {Table,TableHeader,TableBody,TableHead,TableRow,TableCell} from '@/compon
 import {specs,summary,safeURL,type Company,type MetricId,type Result,type Tone,type MetricInput} from '@/lib/company/model';
 import {chartForMetric,SIGNAL_COLORS,SHORT_NAMES,TONE_NAMES} from '@/lib/company/visuals';
 import {SignalScene} from './signal-scene';
+import {SingleRadar,RadarScaleGuide} from './radar-profile';
+import {directoryReadout} from '@/lib/company/radar';
 
 const icons={cashflow:Wallet,runway:Timer,debt:Landmark,growth:TrendingUp,margin:Percent,payroll:Users};
 const statusIcons={positive:CheckCircle2,watch:Info,concern:TriangleAlert,unknown:CircleHelp};
@@ -28,17 +30,18 @@ function MetricChart({id,input,result}:{id:MetricId;input?:MetricInput;result:Re
 function SignalMatrix({results,selected,onSelect}:{results:Result[];selected:MetricId;onSelect:(id:MetricId)=>void}){
  return <div className="signal-matrix"><Table><TableHeader><TableRow><TableHead>Signal</TableHead>{tones.map(t=><TableHead key={t}>{TONE_NAMES[t]}</TableHead>)}</TableRow></TableHeader><TableBody>{specs.map((s,i)=><TableRow key={s.id} data-selected={selected===s.id}><TableCell><button aria-pressed={selected===s.id} onClick={()=>onSelect(s.id)}>{SHORT_NAMES[s.id]}<strong>{results[i].value} <small>{results[i].unit}</small></strong></button></TableCell>{tones.map(t=><TableCell key={t}>{results[i].tone===t?<button className={'matrix-marker '+t} aria-label={s.title+': '+TONE_NAMES[t]} onClick={()=>onSelect(s.id)}><span>{t==='unknown'?'?':t==='concern'?'!':t==='watch'?'•':'✓'}</span></button>:<span className="matrix-empty" aria-hidden="true">·</span>}</TableCell>)}</TableRow>)}</TableBody></Table></div>;
 }
-export function VisualEvaluation({company,onEdit,onEvidence,onPlan,onMethod}:{company:Company;onEdit:(id:MetricId)=>void;onEvidence:()=>void;onPlan:()=>void;onMethod:()=>void}){
- const report=summary(company);
- const priority=specs.find((s,i)=>report.results[i].tone==='concern')??specs.find((s,i)=>report.results[i].tone==='watch')??specs.find((s,i)=>report.results[i].tone==='unknown')??specs[0];
- const [selected,setSelected]=useState<MetricId>(priority.id),[view,setView]=useState('3d'),[unavailable,setUnavailable]=useState(false);
+export function VisualEvaluation({company,onEdit,onEvidence,onPlan,onMethod,onCompare}:{company:Company;onEdit:(id:MetricId)=>void;onEvidence:()=>void;onPlan:()=>void;onMethod:()=>void;onCompare:()=>void}){
+ const report=summary(company),readout=directoryReadout(company);
+ const priority=specs.find((s,i)=>report.results[i].tone==='concern')??specs.find((s,i)=>report.results[i].tone==='watch')??specs.find((s,i)=>report.results[i].tone==='positive')??specs[0];
+ const [selected,setSelected]=useState<MetricId>(priority.id),[view,setView]=useState('radar'),[unavailable,setUnavailable]=useState(false);
  const spec=specs.find(s=>s.id===selected)!,index=specs.indexOf(spec),result=report.results[index],input=company.metrics[selected],StatusIcon=statusIcons[result.tone];
  const countData=tones.map(t=>({name:TONE_NAMES[t],value:report[t],fill:SIGNAL_COLORS[t]}));
  return <section className="visual-evaluation" aria-label="Visual company evaluation">
- <div className="visual-workspace"><div className="signal-observatory"><div className="observatory-top"><div><span className="eyebrow">SIX DIMENSIONS OF COMPANY HEALTH</span><h3>Signal map</h3></div><Tabs value={view} onValueChange={setView}><TabsList className="scene-view-switch"><TabsTrigger value="3d" disabled={unavailable}><Box size={14}/>3D</TabsTrigger><TabsTrigger value="2d"><Grid2X2 size={14}/>2D</TabsTrigger></TabsList></Tabs></div>
- <div className="scene-key">{tones.map(t=><span key={t}><i className={t} style={{'--signal-color':SIGNAL_COLORS[t]} as React.CSSProperties}/>{TONE_NAMES[t]}</span>)}</div>
- {view==='3d'?<SignalScene name={company.name} results={report.results} selected={selected} onSelect={setSelected} onUnavailable={()=>{setUnavailable(true);setView('2d')}}/>:<SignalMatrix results={report.results} selected={selected} onSelect={setSelected}/>}
- <div className="observatory-foot"><span>{unavailable?'3D unavailable on this device · all signals shown in 2D':view==='3d'?'Height = screening band · hollow = unknown':'Each dot shows a screening band'}</span><button onClick={onMethod}>How to read this <ArrowUpRight size={12}/></button></div></div>
+ <div className="health-headline"><div><span className="eyebrow">AT A GLANCE</span><strong className={readout.tone}>{readout.label}</strong><span className="health-counts">{report.positive} positive · {report.watch+report.concern} review · {report.unknown} unknown</span></div><button className="button secondary" onClick={onCompare}><GitCompareArrows size={16}/>Compare company</button></div>
+ <div className="visual-workspace"><div className="signal-observatory"><div className="observatory-top"><div><span className="eyebrow">COMPANY HEALTH PROFILE</span><h3>{view==='radar'?'Performance radar':view==='3d'?'The centrifuge':'Signal table'}</h3></div><Tabs value={view} onValueChange={setView}><TabsList className="scene-view-switch"><TabsTrigger value="radar"><RadarIcon size={14}/>Radar</TabsTrigger><TabsTrigger value="3d" disabled={unavailable}><Box size={14}/>3D</TabsTrigger><TabsTrigger value="2d"><Grid2X2 size={14}/>Table</TabsTrigger></TabsList></Tabs></div>
+ {view!=='radar'&&<div className="scene-key">{tones.map(t=><span key={t}><i className={t} style={{'--signal-color':SIGNAL_COLORS[t]} as React.CSSProperties}/>{TONE_NAMES[t]}</span>)}</div>}
+ {view==='radar'?<SingleRadar company={company} onSelect={setSelected} selected={selected}/>:view==='3d'?<SignalScene name={company.name} results={report.results} selected={selected} onSelect={setSelected} onUnavailable={()=>{setUnavailable(true);setView('radar')}}/>:<SignalMatrix results={report.results} selected={selected} onSelect={setSelected}/>}
+ <div className="observatory-foot"><span>{view==='radar'?'Fixed scales · gaps excluded · no overall safety score':unavailable?'3D unavailable on this device':view==='3d'?'Height = screening band · hollow = unknown':'Each dot shows a screening band'}</span>{view==='radar'?<RadarScaleGuide/>:<button onClick={onMethod}>How to read this <ArrowUpRight size={12}/></button>}</div></div>
  <aside className="metric-focus" style={{'--focus-color':SIGNAL_COLORS[result.tone]} as React.CSSProperties} aria-label="Selected metric details"><div className="focus-top"><span className="eyebrow">IN FOCUS</span><div className="focus-navigation"><button aria-label="Previous signal" onClick={()=>setSelected(specs[(index+5)%6].id)}><ChevronLeft size={16}/></button><span>{String(index+1).padStart(2,'0')} / 06</span><button aria-label="Next signal" onClick={()=>setSelected(specs[(index+1)%6].id)}><ChevronRight size={16}/></button></div></div><span className="focus-category">{spec.group}</span><h3>{spec.title}</h3><div className="focus-value" aria-live="polite"><strong>{result.value}</strong><span>{result.unit}</span></div><span className={'focus-status '+result.tone}><StatusIcon size={14}/>{result.label}</span>
  <MetricChart id={selected} input={input} result={result}/>
  {!result.complete&&<p className="focus-meaning">{spec.question}</p>}

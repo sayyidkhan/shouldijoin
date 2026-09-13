@@ -3,6 +3,7 @@ import "@fontsource-variable/manrope";
 import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
 import "./observatory.css";
+import "./directory.css";
 
 export const metadata: Metadata = {
   title: "Should I Join — Company health checks",

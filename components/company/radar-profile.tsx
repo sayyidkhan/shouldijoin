@@ -1,0 +1,30 @@
+'use client';
+import {useState} from 'react';
+import {RadarChart,Radar,PolarGrid,PolarAngleAxis,PolarRadiusAxis} from 'recharts';
+import {ChartContainer,ChartTooltip,ChartTooltipContent} from '@/components/ui/chart';
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
+import {Table,TableHeader,TableBody,TableRow,TableHead,TableCell} from '@/components/ui/table';
+import {Info,Plus,ArrowUpRight} from 'lucide-react';
+import {RADAR_RULES,radarProfile} from '@/lib/company/radar';
+import type {Company,MetricId} from '@/lib/company/model';
+export const PROFILE_COLORS=['#b8f36d','#86bfff'];
+export function RadarScaleGuide(){
+ const [open,setOpen]=useState(false);
+ return <><button className="radar-guide" onClick={()=>setOpen(true)}><Info size={14}/>How the scale works</button><Dialog open={open} onOpenChange={setOpen}><DialogContent className="metric-dialog radar-guide-dialog"><DialogHeader><DialogTitle>One scale. Different measures.</DialogTitle><DialogDescription>Each axis is mapped to a fixed 0–100 range. Further out represents a stronger reading under these illustrative rules.</DialogDescription></DialogHeader><Table><TableHeader><TableRow><TableHead>Axis</TableHead><TableHead>Measure</TableHead><TableHead>Mapping</TableHead></TableRow></TableHeader><TableBody>{RADAR_RULES.map(r=><TableRow key={r.id}><TableCell>{r.label}</TableCell><TableCell>{r.formula}</TableCell><TableCell>{r.anchors}</TableCell></TableRow>)}</TableBody></Table><p className="metric-caveat">Values between anchors are linearly interpolated and capped at 0 and 100. The chart is not a percentile, industry benchmark, probability of failure or overall safety score. Shape and area should not be used to declare a safer employer.</p><p className="metric-caveat">Missing, stale or incompatible inputs are excluded from the polygon. A comparison uses only common dated metrics with matching periods. Cash / debt is included only when both use cash and cash equivalents, excluding company-defined liquidity measures. Ratios still need context about the business model and employing entity.</p></DialogContent></Dialog></>;
+}
+export function RadarPlot({company,other,axes,onSelect,selected}:{company:Company;other?:Company;axes?:MetricId[];onSelect?:(id:MetricId)=>void;selected?:MetricId}){
+ const a=radarProfile(company),b=other?radarProfile(other):undefined;
+ const allowed=axes??a.filter(r=>r.score!==null).map(r=>r.id);
+ // Only complete, genuinely shared dimensions reach Recharts. Nulls must never
+ // become a zero-radius vertex or be silently interpolated across missing axes.
+ const data=a.filter(r=>allowed.includes(r.id)&&r.score!==null&&(!b||b.find(x=>x.id===r.id)?.score!==null)).map(r=>{const right=b?.find(x=>x.id===r.id);return {axis:r.label,id:r.id,a:r.score,b:right?.score,aValue:r.value,bValue:right?.value};});
+ const config={a:{label:company.name,color:PROFILE_COLORS[0]},b:{label:other?.name??'',color:PROFILE_COLORS[1]}};
+ return <div className="radar-plot"><div className="radar-caption"><span>{data.length} {other?'comparable':'available'} dimensions</span><span>Further out = stronger reading</span></div>
+ {data.length>=3?<ChartContainer config={config} className="company-radar" initialDimension={{width:650,height:400}} aria-label={'Radar profile for '+company.name+(other?' and '+other.name:'')+'. '+data.map(r=>r.axis+': '+r.aValue+(other?' versus '+r.bValue:'')).join('; ')}><RadarChart data={data} outerRadius="70%" margin={{top:25,right:37,bottom:25,left:37}} accessibilityLayer><PolarGrid gridType="polygon" stroke="#526343"/><PolarAngleAxis dataKey="axis" tick={({x,y,payload,textAnchor})=>{const row=data.find(r=>r.axis===payload.value)!;return <text x={x} y={Number(y)+4} textAnchor={textAnchor} fill={selected===row.id?'#d8ffae':'#aebfa1'} fontSize={13} className={onSelect?'radar-axis-button':''} role={onSelect?'button':undefined} tabIndex={onSelect?0:undefined} onClick={()=>onSelect?.(row.id)} onKeyDown={e=>{if(onSelect&&(e.key==='Enter'||e.key===' ')){e.preventDefault();onSelect(row.id)}}}>{payload.value}</text>}}/><PolarRadiusAxis angle={90} domain={[0,100]} tickCount={5} axisLine={false} tick={{fill:'#788b6d',fontSize:11}}/><ChartTooltip content={<ChartTooltipContent formatter={(value,name,item)=><span className="radar-tooltip-value"><span>{name==='a'?company.name:other?.name}</span><strong>{name==='a'?item.payload?.aValue:item.payload?.bValue}</strong></span>}/>}/><Radar dataKey="a" name="a" stroke={PROFILE_COLORS[0]} fill={PROFILE_COLORS[0]} fillOpacity={.15} strokeWidth={2.5} dot={{r:4,fill:PROFILE_COLORS[0],stroke:'#162118',strokeWidth:2}} isAnimationActive={false}/>{other&&<Radar dataKey="b" name="b" stroke={PROFILE_COLORS[1]} fill={PROFILE_COLORS[1]} fillOpacity={.09} strokeWidth={2.5} strokeDasharray="6 4" dot={{r:4,fill:PROFILE_COLORS[1],stroke:'#162118',strokeWidth:2}} isAnimationActive={false}/>}</RadarChart></ChartContainer>:<div className="radar-empty"><Info size={26}/><h4>{other?'Not enough comparable data':'Your profile is taking shape'}</h4><p>A radar needs at least three usable dimensions. {other?'Review the gaps in the table below.':'Add dated figures to reveal the company’s profile.'}</p>{!other&&onSelect&&<button className="button secondary" onClick={()=>onSelect('cashflow')}><Plus size={16}/>Start with cash generation</button>}</div>}
+ <div className="radar-company-legend"><span><i style={{background:PROFILE_COLORS[0]}}/>{company.name}</span>{other&&<span><i className="dashed" style={{borderColor:PROFILE_COLORS[1]}}/>{other.name}</span>}</div>
+ </div>;
+}
+export function SingleRadar({company,onSelect,selected}:{company:Company;onSelect:(id:MetricId)=>void;selected:MetricId}){
+ const profile=radarProfile(company),missing=profile.filter(r=>r.score===null);
+ return <><RadarPlot company={company} onSelect={onSelect} selected={selected}/><div className="radar-gaps"><span>{missing.length?'Not plotted':'All dimensions available'}</span>{missing.map(r=><button key={r.id} onClick={()=>onSelect(r.id)} title={r.detail}>{r.label} <span>{r.value==='N/A'?'N/A':'?'}</span><ArrowUpRight size={12}/></button>)}</div></>;
+}
