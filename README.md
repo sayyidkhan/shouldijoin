@@ -1,8 +1,14 @@
 # Should I Join
 
-[Open the public app](https://should-i-join.promptalchemistlabs.chatgpt.site)
+[Open the public app](https://should-i-join.promptalchemistlabs.chatgpt.site) · [How we assess company health](docs/methodology.md) · [In-app methodology](https://should-i-join.promptalchemistlabs.chatgpt.site/methodology)
 
 A company evaluation workspace for professionals deciding whether to join an employer or preparing for changes at their current company. Built by Sayyid Khan and hosted exclusively on GPT Sites. GitHub stores the source code.
+
+## Assessment methodology
+
+The [methodology document](docs/methodology.md) records all six checks, exact screening bands, radar anchors, a worked example, data eligibility, sources, comparison exclusions and validation limits. The same overview is available in the app’s Methodology tab and at `/methodology`.
+
+These are prototype screening rules chosen for the product. They have not been calibrated against industry peers or backtested as predictors of closures or layoffs. The automated tests check software behaviour, not predictive validity.
 
 ## Company directory and comparison
 
@@ -107,6 +113,8 @@ Focused tests cover radar normalization, cross-company comparability, company-si
 
 | Path | Purpose |
 | --- | --- |
+| `docs/methodology.md` | Versioned methodology, assumptions, source coverage and validation status |
+| `components/company/methodology.tsx`, `app/methodology/page.tsx` | Shared in-app guide and permanent public route |
 | `lib/company/model.ts` | Metric definitions, input validation, calculations, summary and migration |
 | `lib/company/data.ts` | Dated Grab and Sea snapshots, sources and checklists |
 | `lib/company/radar.ts` | Normalization, comparable axes and directory readouts |

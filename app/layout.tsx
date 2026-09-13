@@ -4,6 +4,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
 import "./observatory.css";
 import "./directory.css";
+import "./methodology.css";
 
 export const metadata: Metadata = {
   title: "Should I Join — Company health checks",
