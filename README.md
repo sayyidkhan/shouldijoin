@@ -1,8 +1,8 @@
 # Should I Join
 
-[Open the public app](https://should-i-join.promptalchemistlabs.chatgpt.site) · [How we assess company health](docs/methodology.md) · [In-app methodology](https://should-i-join.promptalchemistlabs.chatgpt.site/methodology)
+[Open the public app](https://should-i-join.promptalchemistlabs.chatgpt.site) · [Open the Zo staging app](https://public-apps-sayyidkhan.zocomputer.io/staging/shouldijoin/) · [How we assess company health](docs/methodology.md) · [In-app methodology](https://should-i-join.promptalchemistlabs.chatgpt.site/methodology)
 
-A company evaluation workspace for professionals deciding whether to join an employer or preparing for changes at their current company. Built by Sayyid Khan and hosted exclusively on GPT Sites. GitHub stores the source code.
+A company evaluation workspace for professionals deciding whether to join an employer or preparing for changes at their current company. Built by Sayyid Khan, with the source in GitHub, a GPT Sites public app and a Zo staging deployment.
 
 ## Assessment methodology
 
